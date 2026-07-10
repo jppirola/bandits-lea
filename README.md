@@ -1,26 +1,40 @@
-# bandits e decisões sequenciais
+# Bandits e decisões sequenciais
 
-este repositório organiza as simulações do trabalho de bandits e decisões sequenciais.
-a ideia é manter a implementação modular, reproduzível e separada dos notebooks de análise.
+Este repositório organiza as simulações do trabalho de bandits e decisões sequenciais. A implementação foi separada dos notebooks de análise para manter o projeto modular, reproduzível e fácil de verificar.
 
-## partes do trabalho
+O trabalho possui duas partes:
 
-### parte 1: inferência após seleção
+1. inferência após seleção em um experimento adaptativo com recompensas Gaussianas;
+2. comparação de políticas em um bandit Poisson com recompensas de contagem.
 
-comparar políticas de alocação em um bandit gaussiano com 5 braços, sob o caso nulo em que todas as médias verdadeiras são iguais a zero. ao final de cada experimento, seleciona-se o braço com maior média amostral e avalia-se a cobertura empírica de um intervalo de confiança ingênuo construído após a seleção.
+## Partes do trabalho
 
-políticas implementadas:
+### Parte 1: inferência após seleção
+
+A primeira parte compara políticas de alocação em um bandit Gaussiano com 5 braços, sob o caso nulo em que todas as médias verdadeiras são iguais a zero.
+
+O modelo usado é
+
+```text
+R_t | a_t = a ~ N(mu_a, sigma^2)
+mu = (0, 0, 0, 0, 0)
+sigma = 1
+```
+
+Ao final de cada experimento, calcula-se a média amostral de cada braço, seleciona-se o braço com maior média amostral e avalia-se a cobertura empírica de um intervalo de confiança ingênuo construído após a seleção.
+
+Políticas implementadas:
 
 - alocação uniforme aleatória;
 - greedy;
-- ucb;
-- thompson sampling gaussiano.
+- UCB;
+- Thompson Sampling Gaussiano.
 
-### parte 2: recompensa acumulada em um exemplo poisson
+### Parte 2: recompensa acumulada em um exemplo Poisson
 
-comparar políticas de alocação em um bandit poisson com 5 campanhas de divulgação. a recompensa diária é o número de novos cadastros obtidos pela campanha escolhida no dia.
+A segunda parte compara políticas de alocação em um bandit Poisson com 5 campanhas de divulgação. A recompensa diária é o número de novos cadastros obtidos pela campanha escolhida no dia.
 
-modelo usado:
+O modelo usado é
 
 ```text
 R_t | a_t = a ~ Poisson(lambda_a)
@@ -28,17 +42,19 @@ lambda = (18, 20, 21, 23, 27)
 lambda_a ~ Gamma(alpha_0, beta_0)
 ```
 
-neste repositório, a gamma é parametrizada por taxa. os valores padrão são `alpha_0 = 4` e `beta_0 = 0.2`, o que gera média prévia `20` e desvio padrão prévio `10`. essa escolha é fraca o suficiente para permitir aprendizado pelos dados, mas mantém a escala compatível com o número esperado de cadastros por dia.
+Neste repositório, a distribuição Gamma é parametrizada por taxa. Os valores padrão são `alpha_0 = 4` e `beta_0 = 0.2`, o que gera média prévia igual a `20` e desvio padrão prévio igual a `10`.
 
-políticas implementadas:
+Essa escolha mantém a prior na escala esperada do número de cadastros por dia, mas ainda permite incerteza suficiente para que os dados atualizem as taxas ao longo do experimento.
+
+Políticas implementadas:
 
 - alocação uniforme aleatória;
 - greedy;
-- thompson sampling poisson-gamma;
-- ucb bayesiano poisson-gamma;
+- Thompson Sampling Poisson-Gamma;
+- UCB Bayesiano Poisson-Gamma;
 - epsilon-greedy.
 
-## estrutura
+## Estrutura
 
 ```text
 .
@@ -75,16 +91,29 @@ políticas implementadas:
 │           ├── thompson.py
 │           └── ucb.py
 └── tests/
+    ├── test_simulation.py
+    └── test_poisson_simulation.py
 ```
 
-## instalação
+## Instalação
+
+O projeto usa `Poetry` para gerenciamento de dependências.
+
+Na raiz do repositório, execute:
 
 ```bash
 poetry install
+```
+
+Para usar os notebooks no VS Code ou no Jupyter, registre o kernel:
+
+```bash
 poetry run python -m ipykernel install --user --name bandit-inference --display-name "bandit-inference"
 ```
 
-## validação rápida
+## Validação rápida
+
+Antes de rodar os experimentos completos, é possível validar o projeto com testes e simulações pequenas:
 
 ```bash
 poetry run pytest
@@ -92,13 +121,21 @@ poetry run python scripts/run_simulation.py --n-replications 100 --horizon 200
 poetry run python scripts/run_poisson_simulation.py --n-replications 100 --horizon 100
 ```
 
-## execução principal da parte 1
+O resultado esperado dos testes é:
 
-```bash
-poetry run python scripts/run_simulation.py --n-replications 5000 --horizon 1000 --seed 12345
+```text
+4 passed
 ```
 
-saídas principais:
+## Execução principal da Parte 1
+
+O comando abaixo reproduz a simulação usada no relatório para a Parte 1:
+
+```bash
+poetry run python scripts/run_simulation.py --n-replications 2000 --horizon 1000 --seed 12345
+```
+
+Saídas principais:
 
 ```text
 data/processed/simulation_results.csv
@@ -110,11 +147,13 @@ reports/figures/selected_arm_frequency.png
 reports/figures/selected_n_vs_mean.png
 ```
 
-## execução principal da parte 2
+## Execução principal da Parte 2
+
+O comando abaixo reproduz a simulação usada no relatório para a Parte 2:
 
 ```bash
 poetry run python scripts/run_poisson_simulation.py \
-  --n-replications 2000 \
+  --n-replications 1000 \
   --horizon 365 \
   --seed 12345 \
   --prior-alpha 4 \
@@ -123,7 +162,7 @@ poetry run python scripts/run_poisson_simulation.py \
   --epsilon 0.1
 ```
 
-saídas principais:
+Saídas principais:
 
 ```text
 data/processed/poisson_results.csv
@@ -136,9 +175,9 @@ reports/figures/poisson_allocation_distribution.png
 reports/figures/poisson_lambda_estimates.png
 ```
 
-## notebooks
+## Notebooks
 
-use os notebooks apenas para análise, visualização e redação interpretativa. a implementação das políticas fica em `src/`.
+Os notebooks são usados para validação, análise, visualização e interpretação dos resultados. A implementação das políticas e das simulações fica em `src/`.
 
 ```text
 00_validacao_rapida.ipynb
@@ -146,6 +185,14 @@ use os notebooks apenas para análise, visualização e redação interpretativa
 02_poisson_recompensa_acumulada.ipynb
 ```
 
-## observação sobre versionamento
+## Reprodutibilidade
 
-por padrão, arquivos gerados em `data/processed/`, `reports/figures/` e `reports/tables/` ficam fora do git. quando as figuras finais forem escolhidas para o relatório, elas podem ser adicionadas explicitamente.
+As simulações usam sementes aleatórias fixadas por argumento de linha de comando. Portanto, os resultados principais do relatório podem ser reproduzidos executando os comandos das seções "Execução principal da Parte 1" e "Execução principal da Parte 2".
+
+A estrutura do projeto segue o padrão `src/`, com testes em `tests/`, scripts de execução em `scripts/` e notebooks separados da implementação principal.
+
+## Observação sobre os resultados
+
+Os arquivos em `reports/figures/` e `reports/tables/` são gerados automaticamente pelos scripts e notebooks. Eles foram mantidos no repositório para facilitar a conferência dos resultados apresentados no relatório.
+
+Os arquivos em `data/processed/` armazenam os resultados das simulações em formato tabular, permitindo reproduzir as tabelas e gráficos sem precisar rodar novamente todos os experimentos.
