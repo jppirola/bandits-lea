@@ -1,0 +1,37 @@
+[tool.poetry]
+name = "bandit-inference"
+version = "0.1.0"
+description = "simulações para inferência após seleção e recompensa acumulada em bandits"
+authors = ["joao pedro pirola"]
+readme = "README.md"
+packages = [{ include = "bandit_inference", from = "src" }]
+
+[tool.poetry.dependencies]
+python = ">=3.12,<3.13"
+numpy = "^2.0"
+pandas = "^2.2"
+matplotlib = "^3.8"
+notebook = "^7.2"
+ipykernel = "^6.29"
+tqdm = "^4.67"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0.0"
+ruff = "^0.6.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 96
+src = ["src", "tests", "scripts"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+ignore = []
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+addopts = "-q"
